@@ -1,0 +1,10 @@
+Bon, l'idée est de formuler tout ce que doit contenir cette cryptographic idea
+Premier etape, on va générer du pseudo latin à partir d'une suite de bits
+Pour cela, on va scanner un livre en latin dans un script à côté, on va en construire une matrice de probabilité de chaque apparition de lettre ou de suite de lettre
+Quand on aura cette matrice, on va essayer de générer des petites dingueries du style à partir de 8 bits, faire un mot sympa.
+Y aura evidemment toute la partie espacement etc.. à gerer, mais les probas devraient pouvoir nous aider.
+Quand cela sera fait, il sagira de toucher à la partie davantage théorie de l'information. C'est à dire: lecture de l'information, compression, chiffrement à coup d'AES128 (demande systématique d'écriture de la clé de chiffrement sous forme d'une passphrase qu'on dérive en clé), et lecture de ces bits pour écrire notre texte avec méthode markov.
+
+markov_mark:
+D'abord formatage du texte, on enlève tout ce qui est \n, on enlève également les chiffres, les brackets.
+On mets tout en lower case aussi.
