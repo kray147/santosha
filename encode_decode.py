@@ -1,5 +1,5 @@
 from markov_mark import * 
-
+import secrets
 
 ####################################################################################
 # PARTIE ENCODER DECODER
@@ -54,7 +54,7 @@ def encoder(bits,verbose):
         full_word += "".join(current_syll)
         if verbose: print("---------------------")
     
-    return full_word, nbits
+    return full_word, nbits  
     
 def syllab_recognizer(input):
     """Fonction permettant de détecter les syllabes dans le texte en suivant les syllabes de markov déjà extraites"""
@@ -62,7 +62,48 @@ def syllab_recognizer(input):
     syllab_decomposer = []
     progressive_length = 0
     work_matrix = first_syllabs_dic
+    temp_syllabs = []
+
     while progressive_length < length_input:
+        anciens_candidats = temp_syllabs
+        temp_syllabs = []
+        chosen_syllab = ""
+
+        if len(syllab_decomposer) > 0:
+            work_matrix = matrix_syllabs[syllab_decomposer[-1]]
+
+        for syllab in work_matrix:
+            if syllab == input[progressive_length : progressive_length + len(syllab)]:
+                temp_syllabs.append(syllab)
+
+        if temp_syllabs:
+            chosen_syllab = max(temp_syllabs, key=len)
+
+        if chosen_syllab:
+            progressive_length += len(chosen_syllab)
+            syllab_decomposer.append(chosen_syllab)
+
+        if not (chosen_syllab):
+            mauvaise_syllab = syllab_decomposer.pop()
+            progressive_length -= len(mauvaise_syllab)
+
+            anciens_candidats.remove(mauvaise_syllab)
+            nouvelle_syllab = max(anciens_candidats, key=len)
+
+            syllab_decomposer.append(nouvelle_syllab)
+            progressive_length += len(nouvelle_syllab)
+            temp_syllabs = [nouvelle_syllab]
+
+    return syllab_decomposer
+
+def old_syllab_recognizer(input):
+    """Fonction permettant de détecter les syllabes dans le texte en suivant les syllabes de markov déjà extraites"""
+    length_input = len(input)
+    syllab_decomposer = []
+    progressive_length = 0
+    work_matrix = first_syllabs_dic
+    while progressive_length < length_input:
+        print(syllab_decomposer)
         # temp_syllabs = []
         temp_syllab = ""
         chosen_syllab = ""
@@ -128,21 +169,50 @@ def type_sorter(string):
         else: 
             return "RAW"    
 
-print(type_sorter("110011101"))
+
+# print(type_sorter("110011101"))
 
 ####################################################################################
 # TESTS DIVERS
 ####################################################################################
-"""
-ditch = "putaria"
+
+""" ditch = "talentshow"
 print("This is the word we're going to encode:", ditch)
 # print(text2bin(ditch))
 
 alpha = encoder(text2bin(ditch),False)
-print("this is the encoded data before guardedbit:", alpha[0])
+print("this is the encoded data :",alpha)
 ask = print("")
-omega = decoder(alpha[0], alpha[1], False)
+omega = decoder(alpha[0], 100, False)
 omega = bin2text(omega)
 print("this is the decoded data:", omega)
-print(ditch == omega)
-"""
+print(ditch == omega) """
+
+def benchmark_encoding(binary_str, latin_text):
+    """Calcule la capacité d'information par syllabe."""
+    # Nettoyage
+    bits_only = (
+        binary_str[2:] if binary_str.startswith("0b") else binary_str
+    )
+    nbits = len(bits_only)
+
+    # Découpage du texte généré en syllabes
+    syllables = syllab_recognizer(latin_text)
+    nsyllabs = len(syllables)
+
+    bits_per_syllable = nbits / nsyllabs
+
+    print(f"--- RÉSULTATS DU BENCHMARK ---")
+    print(f"Bits totaux cachés   : {nbits} bits")
+    print(f"Syllabes générées   : {nsyllabs} syllabes")
+    print(f"Densité d'encodage  : {bits_per_syllable:.3f} bits / syllabe")
+    print(f"Rendement approximif : {bits_per_syllable / 8:.2f} octets / syllabe")
+
+
+# --- TEST 1 : Aléatoire pur (2048 bits = 256 octets) ---
+raw_bytes = secrets.token_bytes(256)
+bits_test = "0b" + "".join(f"{b:08b}" for b in raw_bytes)
+
+latin_out = encoder(bits_test,False)
+print(latin_out[0])
+benchmark_encoding(bits_test, latin_out[0])
