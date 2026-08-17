@@ -1,5 +1,6 @@
 from markov_mark import * 
 import secrets
+HEADER_EOF = ","
 
 ####################################################################################
 # PARTIE ENCODER DECODER
@@ -19,25 +20,28 @@ def guard_bit(sequence, state):
         print("Non existing STATE, choose between 'in' and 'out'")
         return "blank"
 
-def encoder(bits,verbose): 
+def encoder(bits,verbose, initial_syll = ""): 
     """Fonction permettant d'encoder une suite de bits en pseudo-latin markovien"""
     gbits = guard_bit(bits, "in")
+    nbits = len(gbits[2:])  
     V = equitore(gbits)
-    nbits = len(gbits[2:])
+    
     low, high = 0, 2 ** nbits
     full_word = ""
-    current_syll = ""
+    current_syll = initial_syll
     if verbose: print("Your number is:", V)
     
     first_word = True
     while high - low > 1:
         if verbose : print("low =", low,"| high =", high)
-        if first_word:
+        if first_word and initial_syll == "":
             work_matrix = syllabs_intervals(first_syllabs_dic)
-            first_word =not(first_word)
         else:
             work_matrix = syllabs_intervals(matrix_syllabs[current_syll])
         MAX_MATRIX = work_matrix[-1][-1]
+        first_word = False
+
+        
         if verbose : print("max of chosen matrix =",MAX_MATRIX)
         
         span = high - low
@@ -54,7 +58,9 @@ def encoder(bits,verbose):
         full_word += "".join(current_syll)
         if verbose: print("---------------------")
     
-    return full_word, nbits  
+    
+    
+    return full_word, nbits, current_syll
     
 def syllab_recognizer(input):
     """Fonction permettant de détecter les syllabes dans le texte en suivant les syllabes de markov déjà extraites"""
@@ -71,10 +77,10 @@ def syllab_recognizer(input):
 
         if len(syllab_decomposer) > 0:
             work_matrix = matrix_syllabs[syllab_decomposer[-1]]
-
         for syllab in work_matrix:
             if syllab == input[progressive_length : progressive_length + len(syllab)]:
                 temp_syllabs.append(syllab)
+        # print(temp_syllabs, chosen_syllab)
 
         if temp_syllabs:
             chosen_syllab = max(temp_syllabs, key=len)
@@ -122,6 +128,7 @@ def old_syllab_recognizer(input):
 
 def decoder(input, nbits, verbose):
     """Fonction permettant de décoder le pseudo-latin markovien"""
+    input = input.lower()
     #Bon, on doit retrouver V en partant de l'input et sachant qu'on doit récuperer nbits.
     syllabs = syllab_recognizer(input)
     low, high = 0, 2 ** nbits
@@ -141,11 +148,40 @@ def decoder(input, nbits, verbose):
         high = low + (span * high_i) // MAX_MATRIX
         low = low + (span * low_i) // MAX_MATRIX
         
+        if high - low <= 1:
+            break
+        
     V = high
     
     if verbose: print(guard_bit(bin(V), "out"))
     
     return guard_bit(bin(V), "out") #on remove le guardbit après avoir trouvé la bonne séquence
+
+def encode_chain(input, verbose):
+    word, nbits, _ = encoder(input, False)
+    header = encoder("0b" + f"{nbits:015b}", False)
+    full_word = header[0] + HEADER_EOF + word
+    chars = list(full_word)
+    chars[0] = chars[0].upper() 
+    for i in range(len(chars)):
+        
+        if chars[i-2] in ["."] and i >= 2:
+            chars[i] = chars[i].upper()
+    full_word = "".join(chars)
+    return full_word
+
+
+def decoder_header(input):
+    pos_chariot = input.find(HEADER_EOF)
+    # print("This is input in decoder_header:", input)
+    # print(input[:pos_chariot])
+    # print(input[pos_chariot+1:])
+    aaaaah = decoder(input[:pos_chariot], 16, False)
+    return aaaaah
+
+def decode_chain(input):
+    pos_chariot = input.find(HEADER_EOF)
+    return input[pos_chariot + 1:]
 
 def text2bin(text):
     """Texte ASCII/UTF-8 to binary"""
@@ -176,17 +212,21 @@ def type_sorter(string):
 # TESTS DIVERS
 ####################################################################################
 
-""" ditch = "talentshow"
+# ditch = "C'est la vie qui m'entraine mais j'la vois en grise"
+ditch = input("Give an input:\n")
 print("This is the word we're going to encode:", ditch)
 # print(text2bin(ditch))
-
-alpha = encoder(text2bin(ditch),False)
-print("this is the encoded data :",alpha)
-ask = print("")
-omega = decoder(alpha[0], 100, False)
+beta = encode_chain(text2bin(ditch),False)
+# ceta = encode_chain_continuous(text2bin(ditch),False)
+print("This is the encoded continuous chain:", beta)
+print("")
+# print("decoder_header: ", decoder_header(beta),"which means:", int(decoder_header(beta),2))
+omega = decoder(decode_chain(beta), int(decoder_header(beta),2), False)
 omega = bin2text(omega)
-print("this is the decoded data:", omega)
-print(ditch == omega) """
+with open("encoded.txt", "w") as file:
+    file.write(beta)
+    
+# print("this is the decoded data:", omega) 
 
 def benchmark_encoding(binary_str, latin_text):
     """Calcule la capacité d'information par syllabe."""
@@ -209,10 +249,10 @@ def benchmark_encoding(binary_str, latin_text):
     print(f"Rendement approximif : {bits_per_syllable / 8:.2f} octets / syllabe")
 
 
-# --- TEST 1 : Aléatoire pur (2048 bits = 256 octets) ---
+""" # --- TEST 1 : Aléatoire pur (2048 bits = 256 octets) ---
 raw_bytes = secrets.token_bytes(256)
 bits_test = "0b" + "".join(f"{b:08b}" for b in raw_bytes)
 
 latin_out = encoder(bits_test,False)
 print(latin_out[0])
-benchmark_encoding(bits_test, latin_out[0])
+benchmark_encoding(bits_test, latin_out[0]) """
