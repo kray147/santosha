@@ -1,5 +1,6 @@
 import bisect
 import math
+import ast
 
 from syllabreak import Syllabreak
 s_var = Syllabreak("-")
@@ -41,7 +42,8 @@ def proba_count(text):
             matrix[text[i]][text[i+1]] += 1
     return matrix
 
-matrix = proba_count(text_filtered)        
+matrix = proba_count(text_filtered)
+   
 
 def proba_of_suite(matrix, suite): #suite of two caracters that are in alphabet
     if len(suite) == 2 and suite[0] in alphabet and suite[1] in alphabet:
@@ -89,8 +91,6 @@ def syllabic_count_NDORDER(text):
             all_syllabs.append(syllab)
     return all_syllabs
 
-cut_syllabs = syllabic_count_NDORDER(text_filtered)
-
 def build_syllabic_markov(syllables_cut_text):
     """Fonction qui construit les probabilités de Markov"""
     matrix = {}
@@ -102,9 +102,7 @@ def build_syllabic_markov(syllables_cut_text):
         
         matrix[syllables_cut_text[i]][syllables_cut_text[i+1]] += 1
     return matrix
-
-matrix_syllabs = build_syllabic_markov(cut_syllabs)
-
+  
 def sorting_dict(dic):
     return dict(sorted(dic.items()))
 
@@ -132,8 +130,6 @@ def syllabs_intervals(matrix):
         lowlim = work_matrix[syllab] + lowlim
     return array_tuple
 
-first_syllabs_dic = first_syllabs_isolator(matrix_syllabs)
-
 #Maintenant, on a la possibilité de générer des mots en latin qui ne sont pas stupides.
 
 
@@ -144,3 +140,19 @@ def recherche_syll(array_tuple, in_interval):
     index = bisect.bisect_right(upper_interval, in_interval)
     return array_tuple[index] #Après la recherche, on trouve notre syllabe et les bornes qui l'entourent
 
+
+# cut_syllabs = syllabic_count_NDORDER(text_filtered)
+# matrix_syllabs = build_syllabic_markov(cut_syllabs)
+
+#######################################################################
+# On lit juste le contenu de matrix_main sans reconstruire toute la matrice à la main. (on peut le faire si besoin mais c'est un processus un peu lent)
+#######################################################################
+
+with open("matrix_main.txt", "r") as file:
+    matrix_syllabs = file.read()
+matrix_syllabs = ast.literal_eval(matrix_syllabs)
+
+first_syllabs_dic = first_syllabs_isolator(matrix_syllabs)
+
+""" with open("matrix_main.txt", "w") as file:
+    file.write(str(matrix_syllabs))  """  

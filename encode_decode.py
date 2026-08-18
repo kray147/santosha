@@ -20,7 +20,7 @@ def guard_bit(sequence, state):
         print("Non existing STATE, choose between 'in' and 'out'")
         return "blank"
 
-def encoder(bits,verbose, initial_syll = ""): 
+def encoder(bits,verbose = False, initial_syll = ""): 
     """Fonction permettant d'encoder une suite de bits en pseudo-latin markovien"""
     gbits = guard_bit(bits, "in")
     nbits = len(gbits[2:])  
@@ -126,7 +126,7 @@ def old_syllab_recognizer(input):
     # print(syllab_decomposer)
     return syllab_decomposer
 
-def decoder(input, nbits, verbose):
+def decoder(input, nbits, verbose = False):
     """Fonction permettant de décoder le pseudo-latin markovien"""
     input = input.lower()
     #Bon, on doit retrouver V en partant de l'input et sachant qu'on doit récuperer nbits.
@@ -157,7 +157,7 @@ def decoder(input, nbits, verbose):
     
     return guard_bit(bin(V), "out") #on remove le guardbit après avoir trouvé la bonne séquence
 
-def encode_chain(input, verbose):
+def encode_chain(input, verbose = False):
     word, nbits, _ = encoder(input, False)
     header = encoder("0b" + f"{nbits:015b}", False)
     full_word = header[0] + HEADER_EOF + word
@@ -205,6 +205,14 @@ def type_sorter(string):
         else: 
             return "RAW"    
 
+def no1char(user_input):
+    if not(user_input):
+        print("Has to be a non NULL string")
+        return "  "
+    elif len(user_input):
+        return user_input + " "
+    else:
+        return user_input
 
 # print(type_sorter("110011101"))
 
@@ -212,8 +220,8 @@ def type_sorter(string):
 # TESTS DIVERS
 ####################################################################################
 
-# ditch = "C'est la vie qui m'entraine mais j'la vois en grise"
-ditch = input("Give an input:\n")
+""" # ditch = "C'est la vie qui m'entraine mais j'la vois en grise"
+ditch = no1char(input("Give an input:\n"))
 print("This is the word we're going to encode:", ditch)
 # print(text2bin(ditch))
 beta = encode_chain(text2bin(ditch),False)
@@ -224,7 +232,7 @@ print("")
 omega = decoder(decode_chain(beta), int(decoder_header(beta),2), False)
 omega = bin2text(omega)
 with open("encoded.txt", "w") as file:
-    file.write(beta)
+    file.write(beta) """
     
 # print("this is the decoded data:", omega) 
 
