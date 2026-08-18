@@ -84,6 +84,7 @@ def main():
     parser.add_argument("-m", "--message", help="Fichier source OU texte brut (si omis, lit STDIN)")
     parser.add_argument("-p", "--passphrase", help="Passphrase (déconseillé en CLI, utiliser le prompt masqué)")
     parser.add_argument("--ssh", action="store_true", help="Activer le mode Clé SSH Ed25519 brute")
+    parser.add_argument("-o", "--output", help="Fichier de sortie (écriture directe, bypass toute redirection shell)")
 
     args = parser.parse_args()
 
@@ -107,11 +108,12 @@ def main():
             bits = no1char(bytes2bin(encrypted))
             result = encode_chain(bits, False)
             # juste après result = encode_chain(bits, False), avant le sys.stdout.write
-            with open("debug_direct.txt", "wb") as f:
-                f.write(result.encode("utf-8"))
-
-            # Sortie propre sur STDOUT
-            sys.stdout.write(result + "\n")
+            if args.output:
+                with open(args.output, "w", encoding="utf-8", newline="\n") as f:
+                    f.write(result)
+                sys.stderr.write(f"[+] Écrit dans {args.output}\n")
+            else:
+                sys.stdout.write(result + "\n")
 
         elif args.decode:
             # 1. Décodage Stégo Markov -> AES -> Décompression
@@ -120,7 +122,7 @@ def main():
                 latin_str = raw_input.decode("utf-16").strip()
             else:
                 latin_str = raw_input.decode("utf-8-sig").strip()
-            latin_str = raw_input.decode("utf-16").replace("\r\n", "\n").replace("\r", "").strip()
+            # latin_str = raw_input.decode("utf-16").replace("\r\n", "\n").replace("\r", "").strip()
             nbits = int(decoder_header(latin_str), 2)
             bits_str = decoder(decode_chain(latin_str), nbits, False)
 

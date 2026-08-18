@@ -1,6 +1,7 @@
 import bisect
 import math
 import ast
+from main_matrix import DATA
 
 from syllabreak import Syllabreak
 s_var = Syllabreak("-")
@@ -148,9 +149,9 @@ def recherche_syll(array_tuple, in_interval):
 # On lit juste le contenu de matrix_main sans reconstruire toute la matrice à la main. (on peut le faire si besoin mais c'est un processus un peu lent)
 #######################################################################
 
-with open("matrix_main.txt", "r") as file:
-    matrix_syllabs = file.read()
-matrix_syllabs = ast.literal_eval(matrix_syllabs)
+""" with open("matrix_main.txt", "r") as file:
+    matrix_syllabs = file.read() """
+matrix_syllabs = ast.literal_eval(DATA)
 
 first_syllabs_dic = first_syllabs_isolator(matrix_syllabs)
 
