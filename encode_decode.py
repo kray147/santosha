@@ -1,6 +1,6 @@
 from markov_mark import * 
 import secrets
-HEADER_EOF = "!"
+HEADER_EOF = ","
 
 ####################################################################################
 # PARTIE ENCODER DECODER
@@ -212,7 +212,6 @@ def encode_chain(input, verbose = False):
     chars = list(full_word)
     chars[0] = chars[0].upper() 
     for i in range(len(chars)):
-        
         if chars[i-2] in ["."] and i >= 2:
             chars[i] = chars[i].upper()
     full_word = "".join(chars)

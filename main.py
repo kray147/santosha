@@ -30,7 +30,13 @@ def in_message(message, passphrase, verbose = False):
     return encoded_latin
 
 
-
+def verifier(latin_message, passphrase):
+    try:
+        result = out_message(latin_message, passphrase)
+        # print(result)
+        return result is not None and len(result) > 0
+    except Exception:
+        return False
 
 
 def out_message(latin_message, passphrase):
@@ -107,9 +113,9 @@ def main():
             # 3. Encodage Stégo Markov
             bits = no1char(bytes2bin(encrypted))
             result = encode_chain(bits, False)
-            # juste après result = encode_chain(bits, False), avant le sys.stdout.write
+            # print("This is the verifier:",verifier(result, pwd))
             if args.output:
-                with open(args.output, "w", encoding="utf-8", newline="\n") as f:
+                with open(args.output, "w", encoding="ASCII", newline="\n") as f:
                     f.write(result)
                 sys.stderr.write(f"[+] Écrit dans {args.output}\n")
             else:
