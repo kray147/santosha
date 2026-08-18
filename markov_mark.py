@@ -11,8 +11,8 @@ consumns = "bcdfghjklmnpqrstvwxz"
 
 ####################################################################################
 #D'abord, lisons ce texte, il s'appellera constamment le cicero.txt
-with open("cicero.txt","r") as file:
-    content = file.read()
+""" with open("cicero.txt","r") as file:
+    content = file.read() """
     # print(content[0:400])
 
 unwanted = set("[]0123456789")
@@ -25,7 +25,7 @@ def rm_numbers(text):
     #mots = "".join(filtered_text)
     return ("".join(filtered_text)).lower()
 
-text_filtered = rm_numbers(content)
+# text_filtered = rm_numbers(content)
 ####################################################################################
 
 # with open("filtered.txt","w") as file:
@@ -42,7 +42,7 @@ def proba_count(text):
             matrix[text[i]][text[i+1]] += 1
     return matrix
 
-matrix = proba_count(text_filtered)
+# matrix = proba_count(text_filtered)
    
 
 def proba_of_suite(matrix, suite): #suite of two caracters that are in alphabet

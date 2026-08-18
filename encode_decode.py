@@ -1,6 +1,6 @@
 from markov_mark import * 
 import secrets
-HEADER_EOF = ","
+HEADER_EOF = "!"
 
 ####################################################################################
 # PARTIE ENCODER DECODER
@@ -62,7 +62,54 @@ def encoder(bits,verbose = False, initial_syll = ""):
     
     return full_word, nbits, current_syll
     
-def syllab_recognizer(input):
+def wrong_syllab_recognizer(input):
+    """Décomposition en syllabes avec backtracking complet (pile d'alternatives)."""
+    length_input = len(input)
+    stack = []  # chaque frame : {'syllab': choisie, 'candidates': alternatives restantes, 'start': position avant}
+    progressive_length = 0
+
+    while progressive_length < length_input:
+        work_matrix = matrix_syllabs[stack[-1]['syllab']] if stack else first_syllabs_dic
+
+        candidates = sorted(
+            (s for s in work_matrix
+             if input[progressive_length:progressive_length + len(s)] == s),
+            key=len, reverse=True
+        )
+
+        if candidates:
+            chosen = candidates[0]
+            stack.append({
+                'syllab': chosen,
+                'candidates': candidates[1:],  # alternatives gardées pour un futur backtrack
+                'start': progressive_length
+            })
+            progressive_length += len(chosen)
+            continue
+
+        # Aucun candidat : backtracker, potentiellement sur plusieurs niveaux
+        backtracked = False
+        while stack:
+            frame = stack.pop()
+            progressive_length = frame['start']
+            if frame['candidates']:
+                chosen = frame['candidates'][0]
+                stack.append({
+                    'syllab': chosen,
+                    'candidates': frame['candidates'][1:],
+                    'start': progressive_length
+                })
+                progressive_length += len(chosen)
+                backtracked = True
+                break
+            # sinon : ce niveau n'a plus d'alternative, on continue à remonter
+
+        if not backtracked:
+            raise ValueError("Aucune décomposition syllabique possible pour cette entrée.")
+
+    return [frame['syllab'] for frame in stack]
+    
+def syllab_recognizer(input, header = False):
     """Fonction permettant de détecter les syllabes dans le texte en suivant les syllabes de markov déjà extraites"""
     length_input = len(input)
     syllab_decomposer = []
@@ -74,7 +121,7 @@ def syllab_recognizer(input):
         anciens_candidats = temp_syllabs
         temp_syllabs = []
         chosen_syllab = ""
-
+        # print("to treat:", input[progressive_length: length_input])
         if len(syllab_decomposer) > 0:
             work_matrix = matrix_syllabs[syllab_decomposer[-1]]
         for syllab in work_matrix:
@@ -82,6 +129,7 @@ def syllab_recognizer(input):
                 temp_syllabs.append(syllab)
         # print(temp_syllabs, chosen_syllab)
 
+        # print("THIS IS TEMP_SYLLABS:", temp_syllabs)
         if temp_syllabs:
             chosen_syllab = max(temp_syllabs, key=len)
 
@@ -99,10 +147,10 @@ def syllab_recognizer(input):
             syllab_decomposer.append(nouvelle_syllab)
             progressive_length += len(nouvelle_syllab)
             temp_syllabs = [nouvelle_syllab]
-
+        # print("progressive syllabs:", syllab_decomposer)
     return syllab_decomposer
 
-def old_syllab_recognizer(input):
+def veryold_syllab_recognizer(input):
     """Fonction permettant de détecter les syllabes dans le texte en suivant les syllabes de markov déjà extraites"""
     length_input = len(input)
     syllab_decomposer = []
@@ -126,11 +174,11 @@ def old_syllab_recognizer(input):
     # print(syllab_decomposer)
     return syllab_decomposer
 
-def decoder(input, nbits, verbose = False):
+def decoder(input, nbits, verbose = False, header = False):
     """Fonction permettant de décoder le pseudo-latin markovien"""
     input = input.lower()
     #Bon, on doit retrouver V en partant de l'input et sachant qu'on doit récuperer nbits.
-    syllabs = syllab_recognizer(input)
+    syllabs = syllab_recognizer(input, header)
     low, high = 0, 2 ** nbits
     work_matrix_inter = syllabs_intervals(first_syllabs_dic)
     # print(enumerate(syllabs))
@@ -170,13 +218,13 @@ def encode_chain(input, verbose = False):
     full_word = "".join(chars)
     return full_word
 
-
 def decoder_header(input):
     pos_chariot = input.find(HEADER_EOF)
     # print("This is input in decoder_header:", input)
-    # print(input[:pos_chariot])
+    # print("THIS IS THE FUCKASS DECODER_HEADER:", input[:pos_chariot])
     # print(input[pos_chariot+1:])
-    aaaaah = decoder(input[:pos_chariot], 16, False)
+    aaaaah = decoder(input[:pos_chariot], 16, False, True)
+    # print(int(aaaaah,2))
     return aaaaah
 
 def decode_chain(input):
@@ -264,3 +312,5 @@ bits_test = "0b" + "".join(f"{b:08b}" for b in raw_bytes)
 latin_out = encoder(bits_test,False)
 print(latin_out[0])
 benchmark_encoding(bits_test, latin_out[0]) """
+
+# print(syllab_recognizer("Monis, que ,flammaximam misque sunt omni minem conferre. Catur, quem agros ferta obscemus, concidunt amissi id esset, gravideconiugi, in eiusmodi possit, ut id sophorum veniat et fortis intellerit, ut et mutanta tecum habere persobrinobitranquilliqui losocietate ferri si nos studiosum sit silio cernatu propoteneque eoque et ".lower()))

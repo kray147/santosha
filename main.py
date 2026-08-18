@@ -43,25 +43,14 @@ def out_message(latin_message, passphrase):
     
     return final_message
 
-
-""" alpha = in_message("MACABRE 93 TH BONDY NORD LE ROND POINT", "carmen")
+# zen = "Monis, quam!flammaximam misque sunt omni minem conferre. Catur, quem agros ferta obscemus, concidunt amissi id esset, gravideconiugi, in eiusmodi possit, ut id sophorum veniat et fortis intellerit, ut et mutanta tecum habere persobrinobitranquilliqui losocietate ferri si nos studiosum sit silio cernatu propoteneque eoque et "
+""" alpha = in_message("simple message", "carmen")
 print("This is before all the steps:",alpha)
 omega = out_message(alpha, "carmen")
 print("This is after all the steps:", omega)
 print("----------------------------------------") """
 
-""" texte_stego = in_message("MACABRE 93 TH BONDY NORD LE ROND POINT", "carmen")
-print("Décodage :", out_message(texte_stego, "carmen"))
-
-# Écriture
-with open("test_stego.txt", "w", encoding="utf-8") as f:
-    f.write(texte_stego)
-
-# Lecture & Décodage
-with open("test_stego.txt", "r", encoding="utf-8") as f:
-    contenu = f.read()
-
-print("Résultat :", out_message(contenu, "carmen")) """
+ 
 
 
 
@@ -117,6 +106,9 @@ def main():
             # 3. Encodage Stégo Markov
             bits = no1char(bytes2bin(encrypted))
             result = encode_chain(bits, False)
+            # juste après result = encode_chain(bits, False), avant le sys.stdout.write
+            with open("debug_direct.txt", "wb") as f:
+                f.write(result.encode("utf-8"))
 
             # Sortie propre sur STDOUT
             sys.stdout.write(result + "\n")
@@ -128,6 +120,7 @@ def main():
                 latin_str = raw_input.decode("utf-16").strip()
             else:
                 latin_str = raw_input.decode("utf-8-sig").strip()
+            latin_str = raw_input.decode("utf-16").replace("\r\n", "\n").replace("\r", "").strip()
             nbits = int(decoder_header(latin_str), 2)
             bits_str = decoder(decode_chain(latin_str), nbits, False)
 
@@ -145,7 +138,7 @@ def main():
             sys.stdout.write(final_output)
 
     except Exception as e:
-        sys.stderr.write(f"\n[❌ ERREUR] : {e}\n")
+        sys.stderr.write(f"\n[ERREUR] : {e}\n")
         sys.exit(1)
 
 
