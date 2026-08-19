@@ -5,7 +5,7 @@
 Santosha encodes arbitrary data — text, files, SSH keys — into authentic-looking Cicero-style Latin text using a Markov chain syllable model. The output is indistinguishable from real Latin at a glance. Decoding requires both the stego text and the correct passphrase.
 
 ```
-"Moque for!gibus. Erit facitenuisset pericurum possunt. Tatio, de qua nino si
+"Moque for,gibus. Erit facitenuisset pericurum possunt. Tatio, de qua nino si
  doctribus catutenus orti aculosocietas belli ficiis deficia percit, eodem est
  etiam una et anino primus suis..."
 ```
