@@ -116,8 +116,8 @@ def syllab_recognizer(input, header = False):
     progressive_length = 0
     work_matrix = first_syllabs_dic
     temp_syllabs = []
-
     while progressive_length < length_input:
+        # breakpoint()
         anciens_candidats = temp_syllabs
         temp_syllabs = []
         chosen_syllab = ""
@@ -218,16 +218,24 @@ def encode_chain(input, verbose = False):
     return full_word
 
 def decoder_header(input):
-    pos_chariot = input.find(HEADER_EOF)
+    # pos_chariot = input.find(HEADER_EOF)
+    pos_chariot = 0
+    for c in range(len(input)):
+        # print("prog input:",input[c:c+1])
+        if input[c] == HEADER_EOF and input[c+1] != " ":
+            pos_chariot = c
+            break
+        
+    
     # print("This is input in decoder_header:", input)
     # print("THIS IS THE FUCKASS DECODER_HEADER:", input[:pos_chariot])
     # print(input[pos_chariot+1:])
     aaaaah = decoder(input[:pos_chariot], 16, False, True)
     # print(int(aaaaah,2))
-    return aaaaah
+    return aaaaah, pos_chariot
 
-def decode_chain(input):
-    pos_chariot = input.find(HEADER_EOF)
+def decode_chain(input, c):
+    pos_chariot = c
     return input[pos_chariot + 1:]
 
 def text2bin(text):

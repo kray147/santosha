@@ -30,31 +30,31 @@ def in_message(message, passphrase, verbose = False):
     return encoded_latin
 
 
-def verifier(latin_message, passphrase):
-    try:
-        result = out_message(latin_message, passphrase)
-        # print(result)
-        return result is not None and len(result) > 0
-    except Exception:
-        return False
+def verifier(og_message, latin_message, passphrase):
+    result = out_message(latin_message, passphrase)
+    # sys.stderr.write("this is from verifier: " + result)
+    return result == og_message
+
 
 
 def out_message(latin_message, passphrase):
 
     # --- DÉCHIFFREMENT ---
-    encrypted_payload = bin2bytes(decoder(decode_chain(latin_message), int(decoder_header(latin_message),2)))
+    load_bytes, headerlim = decoder_header(latin_message)
+    encrypted_payload = bin2bytes(decoder(decode_chain(latin_message, headerlim), int((load_bytes),2)))
     decrypted_compressed = decrypt_aes128(encrypted_payload, passphrase)
     decompressed_bytes = smart_decompress(decrypted_compressed)
     final_message = decompressed_bytes.decode("utf-8")
     
     return final_message
 
-# zen = "Monis, quam!flammaximam misque sunt omni minem conferre. Catur, quem agros ferta obscemus, concidunt amissi id esset, gravideconiugi, in eiusmodi possit, ut id sophorum veniat et fortis intellerit, ut et mutanta tecum habere persobrinobitranquilliqui losocietate ferri si nos studiosum sit silio cernatu propoteneque eoque et "
-""" alpha = in_message("simple message", "carmen")
-print("This is before all the steps:",alpha)
-omega = out_message(alpha, "carmen")
-print("This is after all the steps:", omega)
-print("----------------------------------------") """
+""" # zen = "Monis, quam!flammaximam misque sunt omni minem conferre. Catur, quem agros ferta obscemus, concidunt amissi id esset, gravideconiugi, in eiusmodi possit, ut id sophorum veniat et fortis intellerit, ut et mutanta tecum habere persobrinobitranquilliqui losocietate ferri si nos studiosum sit silio cernatu propoteneque eoque et "
+for i in range(0,4):
+    alpha = in_message("test simple", "olo")
+    print("This is before all the steps:",alpha)
+    omega = out_message(alpha, "olo")
+    print("This is after all the steps:", omega)
+    print("----------------------------------------") """
 
  
 
@@ -99,7 +99,7 @@ def main():
         pwd = get_passphrase(args.passphrase)
 
         if args.encode:
-            # 1. Préparation des bytes (Clé SSH Brute ou Texte/Fichier)
+        # 1. Préparation des bytes (Clé SSH Brute ou Texte/Fichier)
             if args.ssh:
                 payload_bytes = extract_raw_ed25519(raw_input)
                 sys.stderr.write("[+] Clé Ed25519 réduite à 32 octets bruts.\n")
@@ -113,24 +113,38 @@ def main():
             # 3. Encodage Stégo Markov
             bits = no1char(bytes2bin(encrypted))
             result = encode_chain(bits, False)
-            # print("This is the verifier:",verifier(result, pwd))
+            
+            ####### TOUT FIX BORDEL 
             if args.output:
-                with open(args.output, "w", encoding="ASCII", newline="\n") as f:
+                with open(args.output, "w", encoding="ASCII") as f:
                     f.write(result)
+                # with open(args.output, "r", encoding="ASCII") as f:
+                #     latin_str = f.read()
+                # sys.stderr.write("Both latin in and out are good:" + str(result == latin_str))
+                # sys.stderr.write(latin_str)
+                # v_win = verifier(raw_input, latin_str, pwd)
+                # concat = "This is the verifier: " + str(v_win) +"\n"
+                # sys.stderr.write(concat)
                 sys.stderr.write(f"[+] Écrit dans {args.output}\n")
             else:
+                # v_win = False
                 sys.stdout.write(result + "\n")
 
         elif args.decode:
             # 1. Décodage Stégo Markov -> AES -> Décompression
             # 'utf-8-sig' absorbe le BOM PowerShell automatiquement SANS altérer le texte
-            if raw_input.startswith(b"\xff\xfe") or raw_input.startswith(b"\xfe\xff"):
-                latin_str = raw_input.decode("utf-16").strip()
-            else:
-                latin_str = raw_input.decode("utf-8-sig").strip()
+            # if raw_input.startswith(b"\xff\xfe") or raw_input.startswith(b"\xfe\xff"):
+            # latin_str = raw_input.decode("ASCII")#.strip()
+            
+            # else:
+                # latin_str = raw_input.decode("utf-8-sig").strip()
             # latin_str = raw_input.decode("utf-16").replace("\r\n", "\n").replace("\r", "").strip()
-            nbits = int(decoder_header(latin_str), 2)
-            bits_str = decoder(decode_chain(latin_str), nbits, False)
+            """ with open(raw_input, "r", encoding="ASCII") as f:
+                latin_str = f.read() """
+            latin_str = str(raw_input.decode("ASCII"))
+            # sys.stderr.write(latin_str)
+            nbits, headlim = decoder_header(latin_str)
+            bits_str = decoder(decode_chain(latin_str, headlim), int(nbits,2), False)
 
             encrypted_payload = bin2bytes(bits_str)
             decrypted_compressed = decrypt_aes128(encrypted_payload, pwd)
@@ -152,3 +166,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    
