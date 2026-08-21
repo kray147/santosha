@@ -1,6 +1,6 @@
 from markov_mark import * 
 import secrets
-HEADER_EOF = ","
+HEADER_EOF = "!"
 
 ####################################################################################
 # PARTIE ENCODER DECODER

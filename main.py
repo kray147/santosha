@@ -48,13 +48,16 @@ def out_message(latin_message, passphrase):
     
     return final_message
 
-""" # zen = "Monis, quam!flammaximam misque sunt omni minem conferre. Catur, quem agros ferta obscemus, concidunt amissi id esset, gravideconiugi, in eiusmodi possit, ut id sophorum veniat et fortis intellerit, ut et mutanta tecum habere persobrinobitranquilliqui losocietate ferri si nos studiosum sit silio cernatu propoteneque eoque et "
-for i in range(0,4):
-    alpha = in_message("test simple", "olo")
-    print("This is before all the steps:",alpha)
-    omega = out_message(alpha, "olo")
-    print("This is after all the steps:", omega)
-    print("----------------------------------------") """
+# zen = "Monis, quam!flammaximam misque sunt omni minem conferre. Catur, quem agros ferta obscemus, concidunt amissi id esset, gravideconiugi, in eiusmodi possit, ut id sophorum veniat et fortis intellerit, ut et mutanta tecum habere persobrinobitranquilliqui losocietate ferri si nos studiosum sit silio cernatu propoteneque eoque et "
+# for i in range(0,4):
+""" with open("asgore.ovpn", "r") as file:
+    asgore = file.read()
+alpha = in_message(asgore, "olo")
+print("This is before all the steps:",alpha)
+
+omega = out_message(alpha, "olo")
+print("This is after all the steps:", omega)
+print("----------------------------------------") """
 
  
 
@@ -116,7 +119,7 @@ def main():
             
             ####### TOUT FIX BORDEL 
             if args.output:
-                with open(args.output, "w", encoding="ASCII") as f:
+                with open(args.output, "w", encoding="UTF-8") as f:
                     f.write(result)
                 # with open(args.output, "r", encoding="ASCII") as f:
                 #     latin_str = f.read()
@@ -135,13 +138,12 @@ def main():
             # 'utf-8-sig' absorbe le BOM PowerShell automatiquement SANS altérer le texte
             # if raw_input.startswith(b"\xff\xfe") or raw_input.startswith(b"\xfe\xff"):
             # latin_str = raw_input.decode("ASCII")#.strip()
-            
             # else:
                 # latin_str = raw_input.decode("utf-8-sig").strip()
             # latin_str = raw_input.decode("utf-16").replace("\r\n", "\n").replace("\r", "").strip()
             """ with open(raw_input, "r", encoding="ASCII") as f:
                 latin_str = f.read() """
-            latin_str = str(raw_input.decode("ASCII"))
+            latin_str = str(raw_input.decode("UTF-8"))
             # sys.stderr.write(latin_str)
             nbits, headlim = decoder_header(latin_str)
             bits_str = decoder(decode_chain(latin_str, headlim), int(nbits,2), False)
